@@ -89,6 +89,11 @@ resource "aws_iam_policy" "vpc" {
 EOF
 }
 
+resource "aws_cloudwatch_log_group" "default" {
+  name              = "lambda-${var.function_name}-log-group"
+  retention_in_days = 90
+}
+
 data "archive_file" "zip" {
   count       = var.path != null ? 1 : 0
   type        = "zip"
@@ -129,7 +134,7 @@ resource "aws_lambda_function" "default" {
     target_arn = aws_sqs_queue.dead_letter.arn
   }
 
-  depends_on = [aws_iam_role_policy_attachment.default, aws_iam_role_policy_attachment.vpc]
+  depends_on = [aws_iam_role_policy_attachment.default, aws_iam_role_policy_attachment.vpc, aws_cloudwatch_log_group.default]
 }
 
 
