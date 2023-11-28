@@ -89,10 +89,6 @@ resource "aws_iam_policy" "vpc" {
 EOF
 }
 
-resource "aws_cloudwatch_log_group" "default" {
-  name              = "/aws/lambda/${var.function_name}"
-  retention_in_days = 90
-}
 
 data "archive_file" "zip" {
   count       = var.path != null ? 1 : 0
@@ -134,7 +130,14 @@ resource "aws_lambda_function" "default" {
     target_arn = aws_sqs_queue.dead_letter.arn
   }
 
-  depends_on = [aws_iam_role_policy_attachment.default, aws_iam_role_policy_attachment.vpc, aws_cloudwatch_log_group.default]
+  depends_on = [aws_iam_role_policy_attachment.default, aws_iam_role_policy_attachment.vpc]
+}
+
+resource "aws_cloudwatch_log_group" "lambda_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.default.function_name}"
+  retention_in_days = 90
+
+  depends_on = [aws_lambda_function.default]
 }
 
 
