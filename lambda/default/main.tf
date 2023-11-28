@@ -133,13 +133,6 @@ resource "aws_lambda_function" "default" {
   depends_on = [aws_iam_role_policy_attachment.default, aws_iam_role_policy_attachment.vpc]
 }
 
-resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/${aws_lambda_function.default.function_name}"
-  retention_in_days = 90
-
-  depends_on = [aws_lambda_function.default]
-}
-
 
 resource "aws_sqs_queue" "dead_letter" {
   name                      = "lambda-${var.function_name}-dead-letter"
