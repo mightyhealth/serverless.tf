@@ -9,6 +9,16 @@ EOF
   ]
 }
 
+variable "lambda_functions" {
+  description = "A map of Lambda functions to be triggered by S3 events"
+  type        = map(object({
+    lambda_function_name        = string
+    lambda_arn                  = string
+    trigger_events              = list(string)
+    bucket_notification_extension = string
+  }))
+}
+
 resource "aws_lambda_permission" "lambda" {
   statement_id  = "AllowExecutionFromS3Bucket"
   action        = "lambda:InvokeFunction"
