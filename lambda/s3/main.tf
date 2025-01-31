@@ -9,16 +9,6 @@ EOF
   ]
 }
 
-variable "lambda_functions" {
-  description = "A map of Lambda functions to be triggered by S3 events"
-  type        = map(object({
-    lambda_function_name        = string
-    lambda_arn                  = string
-    trigger_events              = list(string)
-    bucket_notification_extension = string
-  }))
-}
-
 resource "aws_lambda_permission" "lambda" {
   statement_id  = "AllowExecutionFromS3Bucket"
   action        = "lambda:InvokeFunction"
@@ -30,15 +20,12 @@ resource "aws_lambda_permission" "lambda" {
 resource "aws_s3_bucket_notification" "lambda" {
   bucket = var.bucket_name
 
-  dynamic "lambda_function" {
-    for_each = var.lambda_functions
-    content {
-      id                  = "${var.bucket_name}-${lambda_function.value.lambda_function_name}"
-      lambda_function_arn = lambda_function.value.lambda_arn
-      events              = lambda_function.value.trigger_events
-      filter_suffix       = lambda_function.value.bucket_notification_extension
-    }
-  } 
+  lambda_function {
+    id                  = "${var.bucket_name}-${module.default.lambda_function_name}"
+    lambda_function_arn = module.default.lambda_arn
+    events              = var.trigger_events
+    filter_suffix       = var.bucket_notification_extension
+  }
 }
 
 module "default" {
