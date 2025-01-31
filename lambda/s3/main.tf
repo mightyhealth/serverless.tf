@@ -20,12 +20,15 @@ resource "aws_lambda_permission" "lambda" {
 resource "aws_s3_bucket_notification" "lambda" {
   bucket = var.bucket_name
 
-  lambda_function {
-    id                  = "${var.bucket_name}-${module.default.lambda_function_name}"
-    lambda_function_arn = module.default.lambda_arn
-    events              = var.trigger_events
-    filter_suffix       = var.bucket_notification_extension
-  }
+  dynamic "lambda_function" {
+    for_each = var.lambda_functions
+    content {
+      id                  = "${var.bucket_name}-${lambda_function.value.lambda_function_name}"
+      lambda_function_arn = lambda_function.value.lambda_arn
+      events              = lambda_function.value.trigger_events
+      filter_suffix       = lambda_function.value.bucket_notification_extension
+    }
+  } 
 }
 
 module "default" {
